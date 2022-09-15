@@ -2,9 +2,12 @@ import os
 import sys
 from models import pose_movenet
 
-def run(save_dir):
+# Here is where data can be loaded in a consistent format for feeding into various models. 
+
+def run(task_model, data_dir, save_dir):
     print('Performing basic evaluation.')
     
-    pose_movenet.run(save_dir)
+    if(task_model == 'pose_movenet'):
+        pose_movenet.run(data_dir, save_dir)
 
     
