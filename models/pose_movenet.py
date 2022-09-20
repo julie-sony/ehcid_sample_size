@@ -15,8 +15,10 @@ def run(data_dir, save_dir):
     save_data_path = save_dir + '/fake_pose_movenet_results.csv'
     with open(save_data_path, 'w') as f:
         writer = csv.writer(f)
-        for i in range(len(s)):              
-            row = 'fake_img_' + str(i).zfill(3) + '.png, ' + str(s[i])      
+        writer.writerow(['image_file, acc, group'])
+        for i in range(len(s)):     
+            # randomly generate output. Note: random int at the end is an indicator of group membership          
+            row = 'fake_img_' + str(i).zfill(3) + '.png, ' + str(s[i]) + ',' + str(np.random.randint(0, 2))   
             writer.writerow([row])
     
     
