@@ -9,6 +9,9 @@ def get_opt():
     # This method gets and returns command line arguments. 
     parser = argparse.ArgumentParser()    
     
+    # Get task/model pair.
+    parser.add_argument('--task_model', type=str, default='pose_movenet',
+                        help='Input as task/model selection as task_model, e.g. --task_model pose_movenet')      
     # Get path to accuracy results data.
     parser.add_argument('--acc_path', type=str, default='./out/fake_pose_movenet_results.csv',
                         help='Input path to task/model accuracy value CSV')
@@ -32,9 +35,17 @@ def main():
     # If save directory does not exist, create it 
     utils.ensure_dir(opt.save_dir)
     
-    # This is where we will call code to do bootstrapping, statistical analysis, and plotting code. 
-    
-    
+    if(opt.run_type == 'do_bootstrapping'):
+        # This is where we will call code to do bootstrapping
+        do_bootstrapping_eval.run(opt.task_model, opt.acc_path, opt.save_dir)
+
+    if(opt.run_type == 'do_poweranalysis'):
+        # This is where we will call code to do power analysis
+        pass
+
+    if(opt.run_type == 'do_plotting'):
+        # This is where we will call code to do plotting 
+        pass
 
 if __name__ == '__main__':
     main()
