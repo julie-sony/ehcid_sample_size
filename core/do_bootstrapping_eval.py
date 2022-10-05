@@ -22,8 +22,8 @@ def run(task_model, acc_path, save_dir):
     acc = (acc,)
 
     # calculate 95% bootstrapped confidence interval for median
-    total_bootstrap_ci = bootstrap(acc, np.median, confidence_level=0.95,
-                            random_state=1, method='percentile')
+    total_bootstrap_ci = bootstrap(acc, np.median, confidence_level = 0.95, 
+                                                   random_state = 1, n_resamples = 1000)
 
     bootstrap_results['total'] = total_bootstrap_ci.confidence_interval
 
@@ -42,8 +42,8 @@ def run(task_model, acc_path, save_dir):
         # convert array to sequence
         group_acc = (group_acc,)
 
-        # calculate 95% bootstrapped confidence interval for median
-        group_bootstrap_ci= bootstrap(group_acc, np.median, confidence_level=0.95,
+        # calculate 95% bootstrapped confidence interval for mean
+        group_bootstrap_ci= bootstrap(group_acc, np.mean, confidence_level=0.95,
                                 random_state=1, method='percentile')
         bootstrap_results[str(i)] = group_bootstrap_ci.confidence_interval
 
@@ -53,7 +53,6 @@ def run(task_model, acc_path, save_dir):
         writer = csv.writer(f)
         writer.writerow(['group', 'low', 'hight'])
         for key, value in bootstrap_results.items():     
-            # randomly generate output. Note: random int at the end is an indicator of group membership          
             row = [str(key), str(value[0]), str(value[1])]  
             writer.writerow(row)
     

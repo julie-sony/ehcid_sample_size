@@ -2,7 +2,7 @@ import os
 import sys
 import argparse
 from utils import utils 
-from core import do_eval, do_bootstrapping_eval
+from core import do_eval, do_bootstrapping_eval, do_poweranalysis_eval
 
 
 def get_opt():
@@ -41,7 +41,8 @@ def main():
 
     if(opt.run_type == 'do_poweranalysis'):
         # This is where we will call code to do power analysis
-        pass
+        do_poweranalysis_eval.run(opt.task_model, opt.acc_path, opt.save_dir)
+
 
     if(opt.run_type == 'do_plotting'):
         # This is where we will call code to do plotting 

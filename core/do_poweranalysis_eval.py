@@ -1,57 +1,63 @@
 import os
 import sys
 import pandas as pd
-from statsmodels.stats.power import TTestIndPower
-
+import numpy as np
+import random
+import itertools
+from scipy.stats import bootstrap
 
 def read_input(acc_path):
     df = pd.read_csv(acc_path)
     return df 
 
+# def difference_in_mean(x, y):
+    
+#     diff = [i - j for (i, j) in zip(x, y)]
+#     # res = list(df.groupby('group')['acc'].mean())
+#     # diff = res[0] - res[1]
+
+#     return sum(diff)/len(diff) 
+
 def run(task_model, acc_path, save_dir):
-    print('*** bootstrapping running ***')
+    print('*** power analysis running ***')
 
-    bootstrap_results = {}
+    tolerance = 0.01        # acceptable disparities must be in [-tolerance, tolerance]
+    N_factor_min = 1.25
+    N_factor_max = 1.75
+    B = 1000                # number of draws for bootstrapping 
+    N_factors = np.arange(N_factor_min, N_factor_max, 0.25)
+    results = pd.DataFrame(columns=('groups','N','frac','pi_low','pi_high'))   
 
-    df = read_input()
-    acc = df['acc'].tolist()
-    
-    # convert array to sequence
-    acc = (acc,)
+    df = read_input(acc_path)
+    group_pairs = list(itertools.combinations(df['group'].unique(), 2))    
 
-    # calculate 95% bootstrapped confidence interval for median
-    total_bootstrap_ci = bootstrap(acc, np.median, confidence_level=0.95,
-                            random_state=1, method='percentile')
+    for (i, j) in group_pairs:
+        for f in N_factors:
+            counter_low = 0
+            counter_up = 0
+            df_pair = df[(df['group'] == i) | (df['group'] == j)]
 
-    bootstrap_results['total'] = total_bootstrap_ci.confidence_interval
+            # Bootstrapping analysis 
+            for seed in range(B): 
+                df_upsampled = df_pair.sample(frac = f, replace = True, random_state = seed)
 
-    # number of distinct social groups 
-    groups = df['group'].unique()
+                acc = df_upsampled['acc'].tolist()
+                acc = (acc,)
 
-    # perform group-wise bootstrapping
-    for i in groups:
-        
-        # subset the data 
-        group_df = df.loc[df['group'] == i]
+                # Calculate 95% bootstrapped confidence interval for median
+                total_bootstrap_ci = bootstrap(acc, np.mean, confidence_level = 0.95, n_resamples = B)
+                
+                if(total_bootstrap_ci.confidence_interval[0] < -tolerance):
+                    counter_low += 1
+                if(total_bootstrap_ci.confidence_interval[1] > tolerance):
+                    counter_up += 1
 
-        # perform bootstrapping 
-        group_acc = group_df['acc'].tolist()
-        
-        # convert array to sequence
-        group_acc = (group_acc,)
+            tmp = {'groups':(i, j), 'N':int(f*len(df_pair)), 'frac':f, 'pi_low':counter_low/B, 'pi_high':counter_up/B}
+            row = pd.Series(tmp)
+            results = pd.concat([results, row.to_frame().T], axis = 0, ignore_index=True)
 
-        # calculate 95% bootstrapped confidence interval for median
-        group_bootstrap_ci= bootstrap(group_acc, np.median, confidence_level=0.95,
-                                random_state=1, method='percentile')
-        bootstrap_results[str(group)] = group_bootstrap_ci.confidence_interval
+    save_data_path = save_dir + '/' + task_model + '_power_results.csv'
+    results.to_csv(save_data_path, index = False)
 
 
-    save_data_path = save_dir + '/' + task_model + '_bootsrapping_results.csv'
-    with open(save_data_path, 'w') as f:
-        writer = csv.writer(f)
-        for key, value in bootstrap_results.items():     
-            # randomly generate output. Note: random int at the end is an indicator of group membership          
-            row = str(key) + ',' + str(value)   
-            writer.writerow([row])
-    
-    
+
