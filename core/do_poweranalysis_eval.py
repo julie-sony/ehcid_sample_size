@@ -23,7 +23,7 @@ def run(task_model, acc_path, save_dir):
 
     tolerance = 0.01        # acceptable disparities must be in [-tolerance, tolerance]
     N_factor_min = 1.25
-    N_factor_max = 1.75
+    N_factor_max = 5
     B = 1000                # number of draws for bootstrapping 
     N_factors = np.arange(N_factor_min, N_factor_max, 0.25)
     results = pd.DataFrame(columns=('groups','N','frac','pi_low','pi_high'))   
@@ -31,6 +31,7 @@ def run(task_model, acc_path, save_dir):
     df = read_input(acc_path)
     group_pairs = list(itertools.combinations(df['group'].unique(), 2))    
 
+    print('************: ', group_pairs)
     for (i, j) in group_pairs:
         for f in N_factors:
             counter_low = 0

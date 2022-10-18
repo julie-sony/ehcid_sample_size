@@ -6,16 +6,12 @@ import numpy as np
 from scipy.stats import bootstrap
 
 
-def read_input(acc_path):
-    df = pd.read_csv(acc_path)
-    return df 
-
 def run(task_model, acc_path, save_dir):
     print('*** bootstrapping running ***')
 
     bootstrap_results = {}
 
-    df = read_input(acc_path)
+    df = pd.read_csv(acc_path)
     acc = df['acc'].tolist()
     
     # convert array to sequence
