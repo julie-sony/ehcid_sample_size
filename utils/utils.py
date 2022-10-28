@@ -19,7 +19,7 @@ def read_json(fpath):
     return data
 
 
-def add_group_column(acc_path, attribute_path, group):
+def add_attribute_columns(acc_path, attribute_path):
 
     df = pd.read_csv(acc_path, names = ['image_file', 'acc'])
 
@@ -27,7 +27,7 @@ def add_group_column(acc_path, attribute_path, group):
     meta.rename(columns = {'Unnamed: 0' : 'image_file'}, inplace = True)
 
     df = df.merge(meta, on = 'image_file')
-    df['group'] = df[group]
+    #df['group'] = df[group]
     df.to_csv(acc_path.replace('.csv','_modified.csv'))
 
 
