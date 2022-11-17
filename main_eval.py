@@ -2,7 +2,7 @@ import os
 import sys
 import argparse
 from utils import utils 
-from core import do_eval, do_bootstrapping_eval
+from core import do_eval
 
 def get_opt():
     # This method gets and returns command line arguments. 

@@ -2,7 +2,7 @@ import os
 import sys
 import argparse
 from utils import utils 
-from core import do_eval, do_bootstrapping_eval, do_poweranalysis_eval
+from core import do_eval, do_bootstrapping, do_poweranalysis
 
 
 def get_opt():
@@ -27,8 +27,9 @@ def get_opt():
     parser.add_argument('--save_dir', type=str, default='./out',
                         help='Input directory where to save plots and output files.')    
 
-    # Get protected group. 
-    parser.add_argument('--p_group', type=str, default='sex',
+    # Get protected groups. It asks for two groups. If one group is desired, pass '' as the last argument
+    # Example: python main_stats.py --p_groups 'skin_color' ''
+    parser.add_argument('--p_groups', nargs = 2, type=str, default='sex',
                         help ='Group with fairness consideration.')   
 
     # Parse and return args.                     
@@ -47,21 +48,22 @@ def main():
     utils.ensure_dir(opt.acc_path, opt.attribute_path)
     
     # add the attribute column
-    utils.add_group_column(opt.acc_path, opt.attribute_path, opt.p_group)
+    utils.add_attribute_columns(opt.acc_path, opt.attribute_path)
     opt.acc_path = opt.acc_path.replace('.csv','_modified.csv')
 
     if(opt.run_type == 'do_bootstrapping'):
+
         # This is where we will call code to do bootstrapping
-        do_bootstrapping_eval.run(opt.task_model, opt.acc_path, opt.save_dir)
+        do_bootstrapping.run(opt.task_model, opt.acc_path, opt.save_dir, opt.p_groups)
 
     if(opt.run_type == 'do_poweranalysis'):
         # This is where we will call code to do power analysis
-        do_poweranalysis_eval.run(opt.task_model, opt.acc_path, opt.save_dir)
+        do_poweranalysis.run(opt.task_model, opt.acc_path, opt.save_dir, opt.p_groups)
 
     if(opt.run_type == 'do_plotting'):
         # This is where we will call code to do plotting 
         pass
-
+    
 if __name__ == '__main__':
     main()
     
