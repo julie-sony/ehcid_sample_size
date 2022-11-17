@@ -32,9 +32,18 @@ def run(task_model, acc_path, save_dir, p_groups):
 
     # perform bootstrapping to find confidence interval around the mean difference
     for (i, j) in group_pairs:
+
         # subset the data 
         group_i = df[(df['group'] == i)] 
         group_j = df[(df['group'] == j)] 
+
+        min_sample_size = min(len(group_i), len(group_j))
+
+        group_i = group_i.sample(n = 50* (min_sample_size // 50), replace = False, random_state = 123)
+        group_j = group_j.sample(n = 50* (min_sample_size // 50), replace = False, random_state = 123)
+
+        if(min(len(group_i), len(group_j)) < 50):
+            continue 
 
         # perform bootstrapping 
         acc_i = group_i['acc'].tolist()

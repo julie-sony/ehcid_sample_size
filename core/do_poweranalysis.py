@@ -17,9 +17,9 @@ def run(task_model, acc_path, save_dir, p_groups):
     B2 = 100
     tolerance = 0.02         # acceptable disparities must be in [-tolerance, tolerance]
     N_factor_min = 1
-    N_factor_max = 10
+    N_factor_max = 5.5
     N_factors = np.arange(N_factor_min, N_factor_max, 0.5)
-    results = pd.DataFrame(columns=('group1','group2','N1','N2','frac','pi_low','pi_high'))   
+    results = pd.DataFrame(columns=('group1','group2','N1','N2','frac','pi_low','pi_high','low','high','avg'))   
     original_data = False    # use original data or make the samples equal for faster power analyses 
 
     df = pd.read_csv(acc_path)
@@ -46,20 +46,21 @@ def run(task_model, acc_path, save_dir, p_groups):
                 df_i = df[(df['group'] == i)]
                 df_j = df[(df['group'] == j)]
 
-                if(len(df_i) > len(df_j)):
-                    df_i = df_i.sample(n = len(df_j), replace = True, random_state = 123)
+                min_sample_size = min(len(df_i), len(df_j))
 
-                elif(len(df_j) > len(df_i)):
-                    df_j = df_j.sample(n = len(df_i), replace = True, random_state = 123)
-
-                df_pair = pd.concat([df_i, df_j])
+                df_i = df_i.sample(n = 50* (min_sample_size // 50), replace = False, random_state = 123)
+                df_j = df_j.sample(n = 50* (min_sample_size // 50), replace = False, random_state = 123)
 
             counter_low = 0
             counter_up = 0
 
-            print('Bootstrapping for f, N = ', f, int(f*len(df_pair)))
+            print('Bootstrapping for groups: {}, {} and ratio {}, '.format(i, j, f))
             for seed in range(B2): 
-                df_upsampled = df_pair.sample(n = int(f*len(df_pair)), replace = True, random_state = seed)
+                
+                df_i_upsampled = df_i.sample(n = int(f*len(df_i)), replace = True, random_state = seed)
+                df_j_upsampled = df_j.sample(n = int(f*len(df_j)), replace = True, random_state = seed)
+                
+                df_upsampled = pd.concat([df_i_upsampled, df_j_upsampled])
 
                 group_i = df_upsampled[(df_upsampled['group'] == i)] 
                 group_j = df_upsampled[(df_upsampled['group'] == j)] 
@@ -74,7 +75,6 @@ def run(task_model, acc_path, save_dir, p_groups):
                     # Calculate 95% bootstrapped confidence interval for median
                     total_bootstrap_ci = bootstrap(acc, difference_in_mean, confidence_level = 0.95, n_resamples = B1, \
                                                    method = 'basic', vectorized = False)
-                    
                     if(total_bootstrap_ci.confidence_interval[0] < -tolerance/2):
                         counter_low += 1
                     if(total_bootstrap_ci.confidence_interval[1] > tolerance/2):
@@ -83,10 +83,11 @@ def run(task_model, acc_path, save_dir, p_groups):
                     counter_low = -1 
                     counter_up = -1 
 
-            tmp = {'group1': str(i), 'group2' : str(j), 'N1': len(group_i), 'N2': len(group_j),'frac':f, 'pi_low':counter_low/B2, 'pi_high':counter_up/B2}
+            ci = total_bootstrap_ci.confidence_interval
+            avg = difference_in_mean(acc_i, acc_j)
+            tmp = {'group1': str(i), 'group2' : str(j), 'N1': len(group_i), 'N2': len(group_j),'frac':f, 'pi_low':counter_low/B2, 'pi_high':counter_up/B2, 'ci_low': ci[0], 'ci_high': ci[1], 'obs_diff':avg}
             row = pd.DataFrame(tmp, index = [0])
             results = pd.concat([results, row], ignore_index = True)
 
     save_data_path = save_dir + '/' + task_model + '_power_results_' + p_groups + '.csv'
     results.to_csv(save_data_path, index = False)
-    

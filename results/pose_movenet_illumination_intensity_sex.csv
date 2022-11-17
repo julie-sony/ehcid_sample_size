@@ -1,0 +1,5 @@
+group1,group2
+low_female,low_male
+low_female,high_female
+low_male,high_female
+high_male,high_female
