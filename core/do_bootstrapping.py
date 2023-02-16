@@ -29,7 +29,7 @@ def run(task_model, acc_path, save_dir, p_groups):
     tolerance = 0.02             
     results = pd.DataFrame(columns=('group1', 'group2', 'N1', 'N2','low','high','width','obs_diff','zero_included'))   
     groups = pd.DataFrame(columns=('group1', 'group2'))   
-
+    
     # perform bootstrapping to find confidence interval around the mean difference
     for (i, j) in group_pairs:
 
@@ -42,7 +42,7 @@ def run(task_model, acc_path, save_dir, p_groups):
         group_i = group_i.sample(n = 50* (min_sample_size // 50), replace = False, random_state = 123)
         group_j = group_j.sample(n = 50* (min_sample_size // 50), replace = False, random_state = 123)
 
-        if(min(len(group_i), len(group_j)) < 50):
+        if(min(len(group_i), len(group_j)) < 10):
             continue 
 
         # perform bootstrapping 
@@ -80,4 +80,5 @@ def run(task_model, acc_path, save_dir, p_groups):
 
     results.to_csv(save_data_path, index = False)
     groups.to_csv(save_groups_path, index = False)
+    
     

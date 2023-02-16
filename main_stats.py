@@ -13,11 +13,11 @@ def get_opt():
     parser.add_argument('--task_model', type=str, default='pose_movenet',
                         help='Input as task/model selection as task_model, e.g. --task_model pose_movenet')      
     # Get path to accuracy results data.
-    parser.add_argument('--acc_path', type=str, default='./out/fake_pose_movenet_results.csv',
+    parser.add_argument('--acc_path', type=str,
                         help='Input path to task/model accuracy value CSV')
 
     # Get path to the attribute file 
-    parser.add_argument('--attribute_path', type=str, default='./data/synthesisai_attributes_with_checks_extra.csv',
+    parser.add_argument('--attribute_path', type=str, default='./meta_data/instances_2014.csv',
                         help='Input path to image meta data CSV')
   
     # Get process type (e.g. bootstrapping, plotting, other statistical analysis).                     
@@ -47,12 +47,18 @@ def main():
     # If save directory does not exist, create it 
     utils.ensure_dir(opt.acc_path, opt.attribute_path)
     
+    # select the dataset 
+    if('coco' in opt.acc_path):
+        dataset = 'coco'
+
+    if('synthesisai' in opt.acc_path):
+        dataset = 'synthesisai'
+        
     # add the attribute column
-    utils.add_attribute_columns(opt.acc_path, opt.attribute_path)
+    utils.add_attribute_columns(opt.acc_path, opt.attribute_path, dataset)
     opt.acc_path = opt.acc_path.replace('.csv','_modified.csv')
 
     if(opt.run_type == 'do_bootstrapping'):
-
         # This is where we will call code to do bootstrapping
         do_bootstrapping.run(opt.task_model, opt.acc_path, opt.save_dir, opt.p_groups)
 

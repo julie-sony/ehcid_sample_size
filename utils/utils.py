@@ -19,15 +19,26 @@ def read_json(fpath):
     return data
 
 
-def add_attribute_columns(acc_path, attribute_path):
+def select_validation(attribute_path):
+
+    meta = pd.read_csv(attribute_path)
+    meta.rename(columns = {'Unnamed: 0' : 'image_file'}, inplace = True)
+    meta = meta.loc[meta['split'] == 'val']
+    meta.to_csv(attribute_path)
+
+def add_attribute_columns(acc_path, attribute_path, dataset):
 
     df = pd.read_csv(acc_path, names = ['image_file', 'acc'])
 
     meta = pd.read_csv(attribute_path)
-    meta.rename(columns = {'Unnamed: 0' : 'image_file'}, inplace = True)
+
+    if(dataset == 'synthesisai'):
+        meta.rename(columns = {'Unnamed: 0' : 'image_file'}, inplace = True)
+
+    if(dataset == 'coco'):
+        meta.rename(columns = {'annId' : 'image_file'}, inplace = True)
 
     df = df.merge(meta, on = 'image_file')
-    #df['group'] = df[group]
     df.to_csv(acc_path.replace('.csv','_modified.csv'))
 
 

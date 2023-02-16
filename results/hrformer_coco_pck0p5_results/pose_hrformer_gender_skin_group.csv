@@ -1,0 +1,10 @@
+group1,group2
+Male_Dark,Female_Light
+Male_Dark,Male_Light
+Male_Dark,Male_nan
+Male_Dark,Unsure_Light
+Female_Light,Male_Light
+Female_Light,Male_nan
+Female_Light,Unsure_Light
+Male_Light,Unsure_Light
+Male_nan,Unsure_Light
