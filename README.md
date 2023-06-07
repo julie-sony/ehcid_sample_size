@@ -4,4 +4,4 @@ Code for running experiments related to the EHCID paper, specifically related to
 ## Requirements
 Python 3.9
 Pandas
-Scipy 
+scipy 
